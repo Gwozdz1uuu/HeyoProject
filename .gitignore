@@ -1,0 +1,19 @@
+# Frontend (Heyo)
+Heyo/node_modules/
+Heyo/dist/
+Heyo/.angular/
+
+# Backend (HeyoBackend)
+HeyoBackend/target/
+HeyoBackend/.mvn/
+
+# IDEs
+.idea/
+.vscode/
+.settings/
+
+# System
+# System
+.DS_Store
+Thumbs.db
+*.log
