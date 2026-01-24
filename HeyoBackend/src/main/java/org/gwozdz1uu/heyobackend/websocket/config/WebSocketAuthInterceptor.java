@@ -15,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.Principal;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,7 +29,14 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         
-        if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
+        if (accessor == null) {
+            return message;
+        }
+
+        StompCommand command = accessor.getCommand();
+        
+        // Handle CONNECT command - authenticate and set Principal
+        if (StompCommand.CONNECT.equals(command)) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
             
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -50,11 +59,31 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                             accessor.setUser(authentication);
                             
                             log.info("WebSocket authenticated for user: {}", username);
+                        } else {
+                            log.warn("Invalid JWT token for WebSocket connection");
+                            throw new RuntimeException("Invalid token");
                         }
                     }
                 } catch (Exception e) {
                     log.error("WebSocket authentication failed", e);
+                    throw new RuntimeException("Authentication failed", e);
                 }
+            } else {
+                log.warn("No Authorization header in WebSocket CONNECT");
+                throw new RuntimeException("Missing Authorization header");
+            }
+        }
+        
+        // For other commands (SEND, SUBSCRIBE, etc.), verify Principal exists
+        // If Principal is missing, try to get it from SecurityContext
+        if (accessor.getUser() == null && !StompCommand.CONNECT.equals(command)) {
+            Principal principal = SecurityContextHolder.getContext().getAuthentication();
+            if (principal != null) {
+                accessor.setUser(principal);
+                log.debug("Restored Principal from SecurityContext for command: {}", command);
+            } else {
+                log.warn("WebSocket message without authentication: {} - Principal is null", command);
+                // Don't block, but log warning - controller will handle it gracefully
             }
         }
         

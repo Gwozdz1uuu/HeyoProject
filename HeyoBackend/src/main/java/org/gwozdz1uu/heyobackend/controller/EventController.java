@@ -20,6 +20,13 @@ public class EventController {
 
     private final EventService eventService;
 
+    @GetMapping("/my")
+    public ResponseEntity<Page<EventDTO>> getMyEvents(
+            @AuthenticationPrincipal User user,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(eventService.getUserEvents(user, pageable));
+    }
+
     @GetMapping
     public ResponseEntity<Page<EventDTO>> getUpcomingEvents(
             @AuthenticationPrincipal User user,

@@ -15,6 +15,7 @@ public class ProfileDTO {
     private String avatarUrl;
     private String firstName;
     private String lastName;
+    private String nickname;
     private String bio;
     private LocalDate dateOfBirth;
     private String location;
@@ -22,4 +23,5 @@ public class ProfileDTO {
     private String phoneNumber;
     private int friendsCount;
     private int postsCount;
+    private String newToken; // New JWT token if username was changed
 }

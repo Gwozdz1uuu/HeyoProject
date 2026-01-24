@@ -3,8 +3,10 @@ package org.gwozdz1uu.heyobackend.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.gwozdz1uu.heyobackend.dto.ApiError;
+import org.hibernate.LazyInitializationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
@@ -73,6 +75,19 @@ public class GlobalExceptionHandler {
                         HttpStatus.UNAUTHORIZED.value(),
                         "Unauthorized",
                         "Authentication failed",
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler({LazyInitializationException.class, JpaSystemException.class})
+    public ResponseEntity<ApiError> handleLazyInitializationException(Exception ex, HttpServletRequest request) {
+        log.error("Lazy initialization error: {}", ex.getMessage(), ex);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiError.of(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "Internal Server Error",
+                        "Database session error. Please try again.",
                         request.getRequestURI()
                 ));
     }

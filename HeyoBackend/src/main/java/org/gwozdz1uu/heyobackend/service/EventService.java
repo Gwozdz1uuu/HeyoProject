@@ -12,12 +12,53 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class EventService {
 
     private final EventRepository eventRepository;
+
+    public Page<EventDTO> getUserEvents(User user, Pageable pageable) {
+        // Get all events related to user: created, participating, or interested
+        Set<Event> userEvents = new HashSet<>();
+        
+        // Add events created by user
+        userEvents.addAll(eventRepository.findByCreatorIdOrderByEventDateDesc(user.getId()));
+        
+        // Add events where user is participating
+        Page<Event> participatingPage = eventRepository.findByParticipantsIdOrderByEventDateDesc(user.getId(), Pageable.unpaged());
+        userEvents.addAll(participatingPage.getContent());
+        
+        // Add events where user is interested
+        Page<Event> interestedPage = eventRepository.findByInterestedUsersIdOrderByEventDateDesc(user.getId(), Pageable.unpaged());
+        userEvents.addAll(interestedPage.getContent());
+        
+        // Convert to sorted list (by event date descending)
+        var sortedEvents = userEvents.stream()
+                .sorted((e1, e2) -> e2.getEventDate().compareTo(e1.getEventDate()))
+                .collect(Collectors.toList());
+        
+        // Apply pagination manually
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), sortedEvents.size());
+        var paginatedEvents = sortedEvents.subList(start, end);
+        
+        // Convert to DTOs
+        var eventDTOs = paginatedEvents.stream()
+                .map(event -> toDTO(event, user))
+                .collect(Collectors.toList());
+        
+        // Create Page manually
+        return new org.springframework.data.domain.PageImpl<>(
+                eventDTOs,
+                pageable,
+                sortedEvents.size()
+        );
+    }
 
     public Page<EventDTO> getUpcomingEvents(User currentUser, Pageable pageable) {
         return eventRepository.findUpcomingEvents(LocalDateTime.now(), pageable)
@@ -77,6 +118,34 @@ public class EventService {
     }
 
     private EventDTO toDTO(Event event, User currentUser) {
+        // Safely get collection sizes, handling potential null or lazy initialization
+        int interestedCount = 0;
+        int participantsCount = 0;
+        boolean isInterested = false;
+        boolean isParticipating = false;
+        
+        try {
+            if (event.getInterestedUsers() != null) {
+                interestedCount = event.getInterestedUsers().size();
+                isInterested = event.getInterestedUsers().contains(currentUser);
+            }
+        } catch (Exception e) {
+            // Collection not initialized or null, use defaults
+            interestedCount = 0;
+            isInterested = false;
+        }
+        
+        try {
+            if (event.getParticipants() != null) {
+                participantsCount = event.getParticipants().size();
+                isParticipating = event.getParticipants().contains(currentUser);
+            }
+        } catch (Exception e) {
+            // Collection not initialized or null, use defaults
+            participantsCount = 0;
+            isParticipating = false;
+        }
+        
         return EventDTO.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -87,10 +156,10 @@ public class EventService {
                 .hashtags(event.getHashtags())
                 .creatorId(event.getCreator().getId())
                 .creatorUsername(event.getCreator().getUsername())
-                .interestedCount(event.getInterestedUsers().size())
-                .participantsCount(event.getParticipants().size())
-                .isInterested(event.getInterestedUsers().contains(currentUser))
-                .isParticipating(event.getParticipants().contains(currentUser))
+                .interestedCount(interestedCount)
+                .participantsCount(participantsCount)
+                .isInterested(isInterested)
+                .isParticipating(isParticipating)
                 .createdAt(event.getCreatedAt())
                 .build();
     }

@@ -22,4 +22,7 @@ public class AuthResponse {
     private String username;
     private String email;
     private String avatarUrl;
+    
+    @Builder.Default
+    private boolean profileCompleted = false;
 }

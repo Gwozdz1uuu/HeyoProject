@@ -29,19 +29,43 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
 
+        // Generate username from email (part before @)
+        String emailPrefix = request.getEmail().split("@")[0];
+        
+        // Ensure base username is at least 3 characters (validation requirement)
+        // If email prefix is too short, pad it with numbers
+        String baseUsername = emailPrefix;
+        if (baseUsername.length() < 3) {
+            // Pad short prefixes: "g" -> "g12", "ab" -> "ab1"
+            int paddingNeeded = 3 - baseUsername.length();
+            baseUsername = baseUsername + "1".repeat(paddingNeeded);
+        }
+        
+        String username = baseUsername;
+        int counter = 1;
+        
+        // Ensure username is unique
+        while (userRepository.existsByUsername(username)) {
+            // Append counter to ensure uniqueness
+            username = baseUsername + counter;
+            counter++;
+            
+            // Safety check to prevent infinite loop
+            if (counter > 10000) {
+                throw new RuntimeException("Unable to generate unique username");
+            }
+        }
+
         User user = User.builder()
-                .username(request.getUsername())
+                .username(username)
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.USER)
-                .avatarUrl("https://i.pravatar.cc/100?u=" + request.getUsername())
+                .avatarUrl("https://i.pravatar.cc/100?u=" + username)
                 .build();
 
         user = userRepository.save(user);
@@ -61,6 +85,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .avatarUrl(user.getAvatarUrl())
+                .profileCompleted(false)
                 .build();
     }
 
@@ -96,6 +121,12 @@ public class AuthService {
         String token = jwtService.generateToken(user);
         log.info("Login successful for user: {}", user.getUsername());
 
+        // Check if profile is completed (has firstName and lastName)
+        Profile profile = profileRepository.findByUserId(user.getId()).orElse(null);
+        boolean profileCompleted = profile != null && 
+                profile.getFirstName() != null && !profile.getFirstName().isEmpty() &&
+                profile.getLastName() != null && !profile.getLastName().isEmpty();
+
         return AuthResponse.builder()
                 .token(token)
                 .type("Bearer")
@@ -103,6 +134,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .avatarUrl(user.getAvatarUrl())
+                .profileCompleted(profileCompleted)
                 .build();
     }
 }

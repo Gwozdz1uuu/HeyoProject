@@ -26,6 +26,11 @@ public class ChatWebSocketController {
 
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload Map<String, Object> payload, Principal principal) {
+        if (principal == null) {
+            log.error("[WebSocket] sendMessage called without Principal - authentication failed");
+            return;
+        }
+        
         log.info("[WebSocket] Received message from user: {}", principal.getName());
         
         try {
@@ -62,62 +67,103 @@ public class ChatWebSocketController {
             log.error("[WebSocket] Error sending message: {}", e.getMessage());
             
             // Send error back to sender - use username not ID!
-            User sender = userService.findByUsername(principal.getName());
-            messagingTemplate.convertAndSendToUser(
-                    sender.getUsername(),
-                    "/queue/errors",
-                    Map.of("error", e.getMessage(), "type", "MESSAGE_ERROR")
-            );
+            if (principal != null) {
+                try {
+                    User sender = userService.findByUsername(principal.getName());
+                    messagingTemplate.convertAndSendToUser(
+                            sender.getUsername(),
+                            "/queue/errors",
+                            Map.of("error", e.getMessage(), "type", "MESSAGE_ERROR")
+                    );
+                } catch (Exception ex) {
+                    log.error("[WebSocket] Failed to send error message", ex);
+                }
+            }
         }
     }
 
     @MessageMapping("/chat.typing")
     public void typing(@Payload Map<String, Object> payload, Principal principal) {
-        User sender = userService.findByUsername(principal.getName());
-        Long receiverId = Long.valueOf(payload.get("receiverId").toString());
-        User receiver = userService.findById(receiverId);
+        if (principal == null) {
+            log.error("[WebSocket] typing called without Principal - authentication failed");
+            return;
+        }
+        
+        try {
+            User sender = userService.findByUsername(principal.getName());
+            Long receiverId = Long.valueOf(payload.get("receiverId").toString());
+            User receiver = userService.findById(receiverId);
 
-        // Use username not ID for routing!
-        messagingTemplate.convertAndSendToUser(
-                receiver.getUsername(),
-                "/queue/typing",
-                Map.of("userId", sender.getId(), "username", sender.getUsername())
-        );
+            // Use username not ID for routing!
+            messagingTemplate.convertAndSendToUser(
+                    receiver.getUsername(),
+                    "/queue/typing",
+                    Map.of("userId", sender.getId(), "username", sender.getUsername())
+            );
+        } catch (Exception e) {
+            log.error("[WebSocket] Error in typing handler: {}", e.getMessage());
+        }
     }
 
     @MessageMapping("/user.online")
     public void setOnline(Principal principal) {
-        User user = userService.findByUsername(principal.getName());
-        userService.setOnlineStatus(user, true);
+        if (principal == null) {
+            log.error("[WebSocket] setOnline called without Principal - authentication failed");
+            return;
+        }
+        
+        try {
+            User user = userService.findByUsername(principal.getName());
+            userService.setOnlineStatus(user, true);
 
-        // Broadcast to all friends - use transactional method to avoid lazy loading
-        List<Long> friendIds = userService.getFriendIds(user.getId());
-        friendIds.forEach(friendId -> {
-                User friend = userService.findById(friendId);
-                // Use username not ID for routing!
-                messagingTemplate.convertAndSendToUser(
-                        friend.getUsername(),
-                        "/queue/status",
-                        Map.of("userId", user.getId(), "online", true)
-                );
-        });
+            // Broadcast to all friends - use transactional method to avoid lazy loading
+            List<Long> friendIds = userService.getFriendIds(user.getId());
+            friendIds.forEach(friendId -> {
+                try {
+                    User friend = userService.findById(friendId);
+                    // Use username not ID for routing!
+                    messagingTemplate.convertAndSendToUser(
+                            friend.getUsername(),
+                            "/queue/status",
+                            Map.of("userId", user.getId(), "online", true)
+                    );
+                } catch (Exception e) {
+                    log.error("[WebSocket] Error broadcasting status to friend {}: {}", friendId, e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            log.error("[WebSocket] Error in setOnline handler: {}", e.getMessage());
+        }
     }
 
     @MessageMapping("/user.offline")
     public void setOffline(Principal principal) {
-        User user = userService.findByUsername(principal.getName());
-        userService.setOnlineStatus(user, false);
+        if (principal == null) {
+            log.error("[WebSocket] setOffline called without Principal - authentication failed");
+            return;
+        }
+        
+        try {
+            User user = userService.findByUsername(principal.getName());
+            userService.setOnlineStatus(user, false);
 
-        // Broadcast to all friends - use transactional method to avoid lazy loading
-        List<Long> friendIds = userService.getFriendIds(user.getId());
-        friendIds.forEach(friendId -> {
-                User friend = userService.findById(friendId);
-                // Use username not ID for routing!
-                messagingTemplate.convertAndSendToUser(
-                        friend.getUsername(),
-                        "/queue/status",
-                        Map.of("userId", user.getId(), "online", false)
-                );
-        });
+            // Broadcast to all friends - use transactional method to avoid lazy loading
+            List<Long> friendIds = userService.getFriendIds(user.getId());
+            friendIds.forEach(friendId -> {
+                try {
+                    User friend = userService.findById(friendId);
+                    // Use username not ID for routing!
+                    messagingTemplate.convertAndSendToUser(
+                            friend.getUsername(),
+                            "/queue/status",
+                            Map.of("userId", user.getId(), "online", false)
+                    );
+                } catch (Exception e) {
+                    log.error("[WebSocket] Error broadcasting status to friend {}: {}", friendId, e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            log.error("[WebSocket] Error in setOffline handler: {}", e.getMessage());
+        }
     }
 }

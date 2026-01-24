@@ -19,6 +19,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     
     List<Event> findByCreatorIdOrderByEventDateDesc(Long creatorId);
     
+    @Query("SELECT e FROM Event e JOIN e.participants p WHERE p.id = :userId ORDER BY e.eventDate DESC")
+    Page<Event> findByParticipantsIdOrderByEventDateDesc(Long userId, Pageable pageable);
+    
+    @Query("SELECT e FROM Event e JOIN e.interestedUsers i WHERE i.id = :userId ORDER BY e.eventDate DESC")
+    Page<Event> findByInterestedUsersIdOrderByEventDateDesc(Long userId, Pageable pageable);
+    
     @Query("SELECT e FROM Event e WHERE e.title LIKE %:query% OR e.description LIKE %:query%")
     List<Event> searchEvents(String query);
 }

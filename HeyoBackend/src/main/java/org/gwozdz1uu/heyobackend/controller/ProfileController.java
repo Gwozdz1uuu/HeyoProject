@@ -1,6 +1,8 @@
 package org.gwozdz1uu.heyobackend.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.gwozdz1uu.heyobackend.dto.ProfileCreateRequest;
 import org.gwozdz1uu.heyobackend.dto.ProfileDTO;
 import org.gwozdz1uu.heyobackend.model.User;
 import org.gwozdz1uu.heyobackend.service.ProfileService;
@@ -23,6 +25,13 @@ public class ProfileController {
     @GetMapping("/me")
     public ResponseEntity<ProfileDTO> getMyProfile(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(profileService.getProfile(user.getId()));
+    }
+
+    @PostMapping("/complete")
+    public ResponseEntity<ProfileDTO> completeProfile(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody ProfileCreateRequest request) {
+        return ResponseEntity.ok(profileService.completeProfile(user, request));
     }
 
     @PutMapping("/me")
