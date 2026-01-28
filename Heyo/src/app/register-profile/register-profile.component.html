@@ -1,0 +1,94 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <h1 class="title">WITAJ NOWY<br>UŻYTKOWNIKU!</h1>
+    
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+      <!-- Avatar Upload -->
+      <div class="avatar-section">
+        <div class="avatar-preview" [class.has-avatar]="avatarPreview">
+          <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Avatar preview">
+          <div *ngIf="!avatarPreview" class="avatar-placeholder">
+            <mat-icon>add_a_photo</mat-icon>
+          </div>
+          <button 
+            type="button" 
+            class="remove-avatar-btn" 
+            *ngIf="avatarPreview"
+            (click)="removeAvatar()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <input 
+          type="file" 
+          id="avatar-input" 
+          accept="image/jpeg,image/jpg,image/png,image/webp"
+          (change)="onFileSelected($event)"
+          style="display: none;">
+        <label for="avatar-input" class="upload-btn">
+          <mat-icon>photo_camera</mat-icon>
+          Dodaj zdjęcie
+        </label>
+      </div>
+
+      <!-- Form Fields -->
+      <input 
+        type="text"
+        formControlName="firstName" 
+        placeholder="Imię"
+        class="input-field"
+        autocomplete="given-name">
+      <div class="error-message" *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+        {{ getErrorMessage('firstName') }}
+      </div>
+
+      <input 
+        type="text"
+        formControlName="lastName" 
+        placeholder="Nazwisko"
+        class="input-field"
+        autocomplete="family-name">
+      <div class="error-message" *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+        {{ getErrorMessage('lastName') }}
+      </div>
+
+      <input 
+        type="text"
+        formControlName="nickname" 
+        placeholder="Nickname"
+        class="input-field"
+        autocomplete="nickname">
+
+      <!-- Interests Dropdown -->
+      <div class="interests-section">
+        <button 
+          type="button"
+          class="interests-btn"
+          (click)="showInterestsDropdown.set(!showInterestsDropdown())">
+          <span>Zainteresowania</span>
+          <mat-icon>{{ showInterestsDropdown() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        
+        <div class="interests-dropdown" *ngIf="showInterestsDropdown()">
+          <label 
+            *ngFor="let interest of interests" 
+            class="interest-item">
+            <input 
+              type="checkbox"
+              [value]="interest.id"
+              (change)="toggleInterest(interest.id, $event)"
+              [checked]="selectedInterests().includes(interest.id)">
+            <span>{{ interest.name }}</span>
+          </label>
+        </div>
+      </div>
+
+      <button 
+        type="submit"
+        class="submit-btn"
+        [disabled]="isLoading()">
+        <span *ngIf="!isLoading()">Zarejestruj</span>
+        <mat-spinner *ngIf="isLoading()" diameter="20"></mat-spinner>
+      </button>
+    </form>
+  </div>
+</div>

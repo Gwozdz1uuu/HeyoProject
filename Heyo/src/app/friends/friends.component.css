@@ -1,0 +1,225 @@
+.friends-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.friends-header {
+  margin-bottom: 32px;
+}
+
+.friends-header h1 {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Search Section */
+.search-section {
+  margin-bottom: 32px;
+}
+
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: rgba(255, 255, 255, 0.5);
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 48px 12px 48px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.search-spinner {
+  position: absolute;
+  right: 16px;
+}
+
+/* Search Results Section */
+.search-results {
+  margin-bottom: 32px;
+}
+
+.search-results h2,
+.friends-list h2 {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* Users List */
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-card {
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.user-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.user-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: #333;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.username {
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.user-status {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.user-status.online {
+  color: #43e97b;
+}
+
+/* Add Friend Button */
+.add-friend-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.add-friend-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Friend Actions */
+.friend-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.action-btn .action-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-btn:hover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.remove-btn:hover {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+/* No Friends Message */
+.no-friends {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 40px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .friends-container {
+    padding: 16px;
+  }
+
+  .user-card {
+    padding: 12px;
+  }
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+  }
+}

@@ -1,0 +1,18 @@
+<div class="app-layout">
+  <!-- WebSocket Connection Status -->
+  <div 
+    class="connection-status" 
+    *ngIf="showConnectionStatus() || connectionState() !== WebSocketConnectionState.CONNECTED"
+    [class.connected]="connectionState() === WebSocketConnectionState.CONNECTED"
+    [class.connecting]="connectionState() === WebSocketConnectionState.CONNECTING"
+    [class.disconnected]="connectionState() === WebSocketConnectionState.DISCONNECTED"
+    [class.error]="connectionState() === WebSocketConnectionState.ERROR">
+    <span class="status-indicator"></span>
+    <span class="status-text">{{ getConnectionStatusText() }}</span>
+  </div>
+
+  <app-sidenav></app-sidenav>
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

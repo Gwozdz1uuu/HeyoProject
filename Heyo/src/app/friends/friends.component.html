@@ -1,0 +1,75 @@
+<div class="friends-container">
+  <div class="friends-header">
+    <h1>Znajomi</h1>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-input-container">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery"
+        (input)="searchUsers()"
+        placeholder="Szukaj użytkowników..."
+        class="search-input">
+      <mat-spinner *ngIf="isSearching()" diameter="20" class="search-spinner"></mat-spinner>
+    </div>
+  </div>
+
+  <!-- Search Results -->
+  <div class="search-results" *ngIf="searchResults().length > 0">
+    <h2>Wyniki wyszukiwania</h2>
+    <div class="users-list">
+      <div class="user-card" *ngFor="let user of searchResults()">
+        <div class="user-avatar" 
+          [style.background-image]="'url(' + (user.avatarUrl || getDefaultAvatar(user.username)) + ')'">
+        </div>
+        <div class="user-info">
+          <span class="username">{{ user.username }}</span>
+          <span class="user-status" [class.online]="user.online">
+            {{ user.online ? 'Online' : (formatLastSeen(user.lastSeen)) }}
+          </span>
+        </div>
+        <button class="add-friend-btn" (click)="sendFriendRequest(user.id)">
+          Wyślij zaproszenie
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="isLoading()">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Friends List -->
+  <div class="friends-list" *ngIf="!isLoading()">
+    <h2 *ngIf="friends().length > 0">Twoi znajomi ({{ friends().length }})</h2>
+    <div class="no-friends" *ngIf="friends().length === 0 && !searchQuery.trim()">
+      <p>Brak znajomych. Użyj wyszukiwarki, aby znaleźć i dodać znajomych!</p>
+    </div>
+    <div class="users-list" *ngIf="friends().length > 0">
+      <div class="user-card friend-card" *ngFor="let friend of friends()">
+        <div class="user-avatar" 
+          [style.background-image]="'url(' + (friend.avatarUrl || getDefaultAvatar(friend.username)) + ')'"
+          (click)="viewProfile(friend.id)">
+        </div>
+        <div class="user-info" (click)="viewProfile(friend.id)">
+          <span class="username">{{ friend.username }}</span>
+          <span class="user-status" [class.online]="friend.online">
+            {{ friend.online ? 'Online' : (formatLastSeen(friend.lastSeen)) }}
+          </span>
+        </div>
+        <div class="friend-actions">
+          <button class="action-btn profile-btn" (click)="viewProfile(friend.id)" title="Zobacz profil">
+            <span class="action-icon">👤</span>
+          </button>
+          <button class="action-btn remove-btn" (click)="removeFriend(friend.id)" title="Usuń znajomego">
+            <span class="action-icon">🗑️</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

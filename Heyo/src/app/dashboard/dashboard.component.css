@@ -1,0 +1,15 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+  opacity: 0.9;
+}
+
+mat-toolbar button {
+  margin-left: 8px;
+}

@@ -1,0 +1,119 @@
+<div class="profile-container">
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="isLoading()">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Main Content -->
+  <div class="profile-content" *ngIf="!isLoading() && profile()">
+    <!-- Left Column: Profile Info & Posts -->
+    <div class="left-column">
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="avatar-section">
+            <div class="avatar" 
+                 [style.background-image]="'url(' + (profile()?.avatarUrl || getDefaultAvatar(profile()?.username || '')) + ')'">
+            </div>
+            <input 
+              type="file" 
+              id="avatar-input" 
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              (change)="onFileSelected($event)"
+              style="display: none;">
+            <label for="avatar-input" class="change-photo-btn" [class.uploading]="isUploadingAvatar()">
+              <mat-spinner *ngIf="isUploadingAvatar()" diameter="16"></mat-spinner>
+              Zmień zdjęcie
+            </label>
+          </div>
+          
+          <div class="profile-info">
+            <h2 class="profile-name">
+              {{ profile()?.firstName }} {{ profile()?.lastName }}
+            </h2>
+            <p class="profile-nickname" *ngIf="profile()?.nickname">
+              {{ profile()?.nickname }}
+            </p>
+            <p class="profile-nickname placeholder" *ngIf="!profile()?.nickname">
+              Brak nickname
+            </p>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="edit-btn" (click)="openEditUsernameDialog()">
+            Edytuj
+          </button>
+        </div>
+
+        <!-- Posts Grid -->
+        <div class="posts-section">
+          <h3 class="section-title">Moje posty</h3>
+          <div class="posts-grid" *ngIf="posts().length > 0">
+            <div 
+              class="post-thumbnail" 
+              *ngFor="let post of posts(); let i = index"
+              (mouseenter)="setHoveredPost(post.id)"
+              (mouseleave)="setHoveredPost(null)"
+              [class.hovered]="hoveredPostId() === post.id"
+              [class.has-image]="post.imageUrl"
+              [class.has-text-only]="!post.imageUrl && post.content">
+              <div class="post-image" *ngIf="post.imageUrl"
+                   [style.background-image]="'url(' + post.imageUrl + ')'">
+                <div class="post-overlay" *ngIf="hoveredPostId() === post.id">
+                  <button class="delete-post-btn" (click)="deletePost(post.id)">
+                    <span class="delete-icon">🗑️</span>
+                  </button>
+                </div>
+                <div class="post-text-overlay" *ngIf="post.content">
+                  <p class="post-text-preview">{{ getPostTextPreview(post.content) }}</p>
+                </div>
+              </div>
+              <div class="post-text-only" *ngIf="!post.imageUrl && post.content">
+                <p class="post-text-content">{{ post.content }}</p>
+                <div class="post-overlay" *ngIf="hoveredPostId() === post.id">
+                  <button class="delete-post-btn" (click)="deletePost(post.id)">
+                    <span class="delete-icon">🗑️</span>
+                  </button>
+                </div>
+              </div>
+              <div class="post-placeholder" *ngIf="!post.imageUrl && !post.content">
+                <span class="placeholder-icon">📄</span>
+              </div>
+            </div>
+          </div>
+          <div class="no-posts" *ngIf="posts().length === 0">
+            <p>Brak postów</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Events -->
+    <div class="right-column">
+      <div class="events-card">
+        <h3 class="section-title">Moje wydarzenia</h3>
+        
+        <div class="loading-container" *ngIf="events().length === 0 && !isLoading()">
+          <p>Brak wydarzeń</p>
+        </div>
+
+        <div class="event-item" *ngFor="let event of events()">
+          <div class="event-image" 
+               [style.background-image]="event.imageUrl ? 'url(' + event.imageUrl + ')' : 'linear-gradient(135deg, #6366f1, #8b5cf6)'">
+          </div>
+          <div class="event-info">
+            <span class="event-type">{{ getEventType(event) }}</span>
+            <h4 class="event-title">{{ event.title }}</h4>
+            <span class="event-date">
+              {{ formatEventDate(event.eventDate) }}
+            </span>
+            <span class="event-location" *ngIf="event.location">
+              {{ event.location }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

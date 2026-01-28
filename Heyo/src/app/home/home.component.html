@@ -1,0 +1,125 @@
+<div class="home-container">
+  <!-- Feed Section -->
+  <div class="feed-section">
+    <!-- Create Post -->
+    <div class="create-post-card">
+      <textarea 
+        [(ngModel)]="newPostContent"
+        placeholder="Co słychać?"
+        class="post-input"
+        rows="3"></textarea>
+      <div class="post-actions-row">
+        <input 
+          type="text" 
+          [(ngModel)]="newPostImageUrl"
+          placeholder="URL obrazka (opcjonalnie)"
+          class="image-url-input">
+        <button 
+          class="post-btn" 
+          (click)="createPost()"
+          [disabled]="isCreatingPost() || (!newPostContent.trim() && !newPostImageUrl.trim())">
+          <span *ngIf="!isCreatingPost()">Opublikuj</span>
+          <mat-spinner *ngIf="isCreatingPost()" diameter="20"></mat-spinner>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-container" *ngIf="isLoading()">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <!-- No Posts Message -->
+    <div class="no-posts" *ngIf="!isLoading() && posts().length === 0">
+      <p>Brak postów do wyświetlenia. Dodaj znajomych lub utwórz pierwszy post!</p>
+    </div>
+
+    <!-- Posts -->
+    <div class="post-card" *ngFor="let post of posts()">
+      <div class="post-header">
+        <div class="avatar" 
+          [style.background-image]="'url(' + (post.authorAvatarUrl || getDefaultAvatar(post.authorUsername)) + ')'">
+        </div>
+        <div class="post-info">
+          <span class="username">{{ post.authorUsername }}</span>
+          <span class="date">{{ formatDate(post.createdAt) }}</span>
+        </div>
+      </div>
+      
+      <div class="post-image" *ngIf="post.imageUrl" [style.background-image]="'url(' + post.imageUrl + ')'"></div>
+      
+      <p class="post-text" *ngIf="post.content">{{ post.content }}</p>
+      
+      <div class="post-stats">
+        <span>{{ post.likesCount }} polubień</span>
+        <span>{{ post.commentsCount }} komentarzy</span>
+      </div>
+      
+      <div class="post-actions">
+        <button class="action-btn like-btn" (click)="likePost(post)" [class.liked]="post.likedByCurrentUser">
+          <span class="action-icon">❤</span>
+          <span>{{ post.likedByCurrentUser ? 'Lubię' : 'Polub' }}</span>
+        </button>
+        <button class="action-btn" (click)="toggleComments(post.id)">
+          <span class="action-icon">💬</span>
+          <span>Skomentuj</span>
+        </button>
+      </div>
+
+      <!-- Comments Section -->
+      <div class="comments-section" *ngIf="isCommentsExpanded(post.id)">
+        <!-- Loading Comments -->
+        <div class="loading-comments" *ngIf="isLoadingComments(post.id)">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+
+        <!-- Comments List -->
+        <div class="comments-list" *ngIf="!isLoadingComments(post.id)">
+          <div class="comment-item" *ngFor="let comment of getComments(post.id)">
+            <div class="comment-avatar" 
+              [style.background-image]="'url(' + (comment.authorAvatarUrl || getDefaultAvatar(comment.authorUsername)) + ')'">
+            </div>
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-author">{{ comment.authorUsername }}</span>
+                <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+              </div>
+              <p class="comment-text">{{ comment.content }}</p>
+            </div>
+          </div>
+
+          <div class="no-comments" *ngIf="getComments(post.id).length === 0">
+            <p>Brak komentarzy. Bądź pierwszy!</p>
+          </div>
+        </div>
+
+        <!-- Add Comment Form -->
+        <div class="add-comment-form">
+          <div class="comment-input-container">
+            <input 
+              type="text" 
+              placeholder="Napisz komentarz..."
+              class="comment-input"
+              [value]="getCommentInput(post.id)"
+              (input)="setCommentInput(post.id, $any($event.target).value)"
+              (keydown.enter)="addComment(post.id)">
+            <button 
+              class="comment-submit-btn" 
+              (click)="addComment(post.id)"
+              [disabled]="isSubmittingCommentFor(post.id) || !getCommentInput(post.id).trim()">
+              <mat-spinner *ngIf="isSubmittingCommentFor(post.id)" diameter="16"></mat-spinner>
+              <mat-icon *ngIf="!isSubmittingCommentFor(post.id)">send</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ads Section -->
+  <div class="ads-section">
+    <div class="ad-card" *ngFor="let ad of ads">
+      <div class="ad-image" [style.background-image]="'url(' + ad.image + ')'"></div>
+    </div>
+  </div>
+</div>

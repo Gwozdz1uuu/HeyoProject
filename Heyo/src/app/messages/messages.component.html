@@ -1,0 +1,164 @@
+<div class="messages-container">
+  <!-- Contacts List -->
+  <div class="contacts-panel">
+    <!-- Header with search and new chat button -->
+    <div class="contacts-header">
+      <h3>Czaty</h3>
+      <button class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
+              (click)="openNewChatDialog()" 
+              title="Nowy czat"
+              style="width: 36px; height: 36px; padding: 0;">
+        <span style="font-size: 20px; font-weight: 300; line-height: 1;">+</span>
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (input)="searchConversations()" 
+        placeholder="Szukaj konwersacji..."
+        class="search-input">
+    </div>
+
+    <div class="loading-container" *ngIf="isLoadingConversations()">
+      <mat-spinner diameter="30"></mat-spinner>
+    </div>
+    
+    <div class="no-conversations" *ngIf="!isLoadingConversations() && filteredConversations().length === 0 && !searchQuery.trim()">
+      <p>Brak konwersacji</p>
+    </div>
+
+    <div class="no-results" *ngIf="!isLoadingConversations() && filteredConversations().length === 0 && searchQuery.trim()">
+      <p>Brak wyników wyszukiwania</p>
+    </div>
+    
+    <div 
+      class="contact-item" 
+      *ngFor="let conversation of filteredConversations()"
+      [class.active]="selectedConversation()?.id === conversation.id"
+      [class.unread]="conversation.unreadCount > 0"
+      (click)="selectConversation(conversation)">
+      <div class="contact-avatar">
+        <img [src]="conversation.partnerAvatarUrl || getDefaultAvatar(conversation.partnerUsername)" 
+             [alt]="conversation.partnerUsername">
+        <span class="online-dot" *ngIf="conversation.partnerOnline"></span>
+      </div>
+      <div class="contact-info">
+        <span class="contact-name">{{ conversation.partnerUsername }}</span>
+        <span class="contact-preview">{{ conversation.lastMessage || 'Rozpocznij rozmowę...' }}</span>
+      </div>
+      <span class="unread-badge" *ngIf="conversation.unreadCount > 0">
+        {{ conversation.unreadCount }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Chat Panel -->
+  <div class="chat-panel" *ngIf="selectedConversation()">
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="chat-user">
+        <img [src]="selectedConversation()!.partnerAvatarUrl || getDefaultAvatar(selectedConversation()!.partnerUsername)" 
+             [alt]="selectedConversation()!.partnerUsername">
+        <div class="chat-user-info">
+          <span class="chat-username">{{ selectedConversation()!.partnerUsername }}</span>
+          <span class="chat-status" [class.online]="selectedConversation()!.partnerOnline">
+            {{ selectedConversation()!.partnerOnline ? 'aktywny' : 'nieaktywny' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Messages -->
+    <div class="messages-loading" *ngIf="isLoadingMessages()">
+      <mat-spinner diameter="30"></mat-spinner>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-list" *ngIf="!isLoadingMessages()">
+      <div class="no-messages" *ngIf="messages().length === 0">
+        <p>Brak wiadomości. Napisz coś!</p>
+      </div>
+      
+      <div 
+        class="message" 
+        *ngFor="let msg of messages()"
+        [class.from-me]="isFromMe(msg)"
+        [class.from-other]="!isFromMe(msg)">
+        <div class="message-bubble">{{ msg.content }}</div>
+        <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+      </div>
+      
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" *ngIf="typingUserId()">
+        <span class="typing-text">{{ typingUsername() }} pisze...</span>
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input">
+      <input 
+        type="text" 
+        [(ngModel)]="newMessage"
+        (keydown)="onKeyDown($event)"
+        (input)="onInput()"
+        placeholder="Napisz wiadomość..."
+        [disabled]="isSending()">
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim() || isSending()">
+        <span class="send-icon" *ngIf="!isSending()">✉️</span>
+        <mat-spinner *ngIf="isSending()" diameter="20"></mat-spinner>
+      </button>
+    </div>
+  </div>
+
+  <!-- No conversation selected -->
+  <div class="no-selection" *ngIf="!selectedConversation() && !isLoadingConversations()">
+    <p>Wybierz konwersację, aby rozpocząć czat</p>
+  </div>
+
+  <!-- New Chat Dialog -->
+  <div class="new-chat-dialog-overlay" *ngIf="showNewChatDialog()" (click)="closeNewChatDialog()">
+    <div class="new-chat-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>Nowy czat</h3>
+        <button class="close-btn" (click)="closeNewChatDialog()">
+          <span class="close-icon">✕</span>
+        </button>
+      </div>
+      
+      <div class="dialog-content">
+        <div class="loading-container" *ngIf="isLoadingFriends()">
+          <mat-spinner diameter="30"></mat-spinner>
+        </div>
+
+        <div class="no-friends" *ngIf="!isLoadingFriends() && friendsWithoutChat().length === 0">
+          <p>Wszyscy Twoi znajomi mają już z Tobą czat</p>
+        </div>
+
+        <div class="friends-list" *ngIf="!isLoadingFriends() && friendsWithoutChat().length > 0">
+          <div 
+            class="friend-item" 
+            *ngFor="let friend of friendsWithoutChat()"
+            (click)="createChatWithFriend(friend)">
+            <div class="friend-avatar">
+              <img [src]="friend.avatarUrl || getDefaultAvatar(friend.username)" 
+                   [alt]="friend.username">
+              <span class="online-dot" *ngIf="friend.online"></span>
+            </div>
+            <span class="friend-name">{{ friend.username }}</span>
+            <span class="arrow-icon" *ngIf="!isCreatingChat()">→</span>
+            <mat-spinner *ngIf="isCreatingChat()" diameter="20"></mat-spinner>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

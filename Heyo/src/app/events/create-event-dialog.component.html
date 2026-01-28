@@ -1,0 +1,103 @@
+<div class="create-event-dialog">
+  <h2 mat-dialog-title>Utwórz wydarzenie</h2>
+  
+  <mat-dialog-content>
+    <form [formGroup]="eventForm" class="event-form">
+      <!-- Title -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Tytuł</mat-label>
+        <input matInput formControlName="title" placeholder="Np. Tech Meetup 2026" />
+        <mat-error *ngIf="eventForm.get('title')?.hasError('required')">
+          Tytuł jest wymagany
+        </mat-error>
+        <mat-error *ngIf="eventForm.get('title')?.hasError('minlength')">
+          Tytuł musi mieć minimum 3 znaki
+        </mat-error>
+        <mat-error *ngIf="eventForm.get('title')?.hasError('maxlength')">
+          Tytuł może mieć maksimum 200 znaków
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Description -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Opis</mat-label>
+        <textarea matInput formControlName="description" rows="4" 
+                  placeholder="Opisz wydarzenie..."></textarea>
+        <mat-error *ngIf="eventForm.get('description')?.hasError('maxlength')">
+          Opis może mieć maksimum 1000 znaków
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Image Upload -->
+      <div class="image-upload-section">
+        <label class="upload-label">Zdjęcie wydarzenia (opcjonalne)</label>
+        <div class="image-upload-container">
+          <input type="file" 
+                 accept="image/jpeg,image/jpg,image/png,image/webp" 
+                 (change)="onFileSelected($event)"
+                 id="event-image-input"
+                 style="display: none;">
+          <label for="event-image-input" class="upload-button">
+            <span>Wybierz zdjęcie</span>
+          </label>
+          <div class="image-preview" *ngIf="imagePreview">
+            <img [src]="imagePreview" alt="Preview">
+            <button type="button" class="remove-image-btn" (click)="removeImage()">
+              <span class="close-icon">✕</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date and Time -->
+      <div class="date-time-row">
+        <mat-form-field appearance="outline" class="date-field">
+          <mat-label>Data</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="eventDate" />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-error *ngIf="eventForm.get('eventDate')?.hasError('required')">
+            Data jest wymagana
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="time-field">
+          <mat-label>Godzina</mat-label>
+          <input matInput type="time" formControlName="eventTime" />
+          <mat-error *ngIf="eventForm.get('eventTime')?.hasError('required')">
+            Godzina jest wymagana
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Location -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Miejsce</mat-label>
+        <input matInput formControlName="location" placeholder="Np. Tech Hub, Downtown" />
+        <mat-error *ngIf="eventForm.get('location')?.hasError('maxlength')">
+          Miejsce może mieć maksimum 200 znaków
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Hashtags -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Hashtagi</mat-label>
+        <input matInput formControlName="hashtags" placeholder="#tech #meetup #developers" />
+        <mat-hint>Oddziel hashtagi spacją, np. #tech #meetup</mat-hint>
+        <mat-error *ngIf="eventForm.get('hashtags')?.hasError('maxlength')">
+          Hashtagi mogą mieć maksimum 200 znaków
+        </mat-error>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">Anuluj</button>
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isSubmitting || isUploading">
+      <mat-spinner diameter="20" *ngIf="isUploading || isSubmitting" class="button-spinner"></mat-spinner>
+      <span *ngIf="!isUploading && !isSubmitting">Utwórz</span>
+      <span *ngIf="isUploading">Przesyłanie...</span>
+      <span *ngIf="isSubmitting && !isUploading">Tworzenie...</span>
+    </button>
+  </mat-dialog-actions>
+</div>

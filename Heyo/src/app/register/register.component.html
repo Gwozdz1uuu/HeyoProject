@@ -1,0 +1,59 @@
+<div class="register-container">
+  <div class="register-card">
+    <h1 class="title">Zarejestruj się<br>w Heyo!</h1>
+    
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <input 
+        type="email"
+        formControlName="email" 
+        placeholder="Email"
+        class="input-field"
+        autocomplete="email">
+      <div class="error-message" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+        {{ getErrorMessage('email') }}
+      </div>
+      
+      <input 
+        type="email"
+        formControlName="confirmEmail" 
+        placeholder="Powtórz email"
+        class="input-field"
+        autocomplete="email">
+      <div class="error-message" *ngIf="registerForm.get('confirmEmail')?.invalid && registerForm.get('confirmEmail')?.touched">
+        {{ getErrorMessage('confirmEmail') }}
+      </div>
+      
+      <input 
+        [type]="hidePassword() ? 'password' : 'text'"
+        formControlName="password" 
+        placeholder="Hasło"
+        class="input-field"
+        autocomplete="new-password">
+      <div class="error-message" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+        {{ getErrorMessage('password') }}
+      </div>
+      
+      <input 
+        [type]="hidePassword() ? 'password' : 'text'"
+        formControlName="confirmPassword" 
+        placeholder="Powtórz hasło"
+        class="input-field"
+        autocomplete="new-password">
+      <div class="error-message" *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched">
+        {{ getErrorMessage('confirmPassword') }}
+      </div>
+      
+      <button 
+        type="submit"
+        class="submit-btn"
+        [disabled]="isLoading()">
+        <span *ngIf="!isLoading()">Zarejestruj</span>
+        <mat-spinner *ngIf="isLoading()" diameter="20"></mat-spinner>
+      </button>
+    </form>
+
+    <div class="bottom-link">
+      <a (click)="goToLogin()">Wróć do logowania</a>
+    </div>
+  </div>
+</div>

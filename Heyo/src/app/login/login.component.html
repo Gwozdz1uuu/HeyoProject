@@ -1,0 +1,39 @@
+<div class="login-container">
+  
+  <div class="login-card">
+    <a class="top-link" (click)="goToRegister()">Zarejestruj</a>
+    
+    <h1 class="title">Witaj w Heyo!</h1>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <input 
+        type="text"
+        formControlName="username" 
+        placeholder="Nazwa użytkownika lub email"
+        class="input-field"
+        autocomplete="username">
+      
+      <input 
+        [type]="hidePassword() ? 'password' : 'text'"
+        formControlName="password" 
+        placeholder="Hasło"
+        class="input-field"
+        autocomplete="current-password">
+      
+      <button 
+        type="submit"
+        class="submit-btn"
+        [disabled]="isLoading()">
+        <span *ngIf="!isLoading()">Zaloguj</span>
+        <mat-spinner *ngIf="isLoading()" diameter="20"></mat-spinner>
+      </button>
+    </form>
+
+    <div class="bottom-links">
+      <label class="remember-me">
+        <input type="checkbox"> Zapamiętaj mnie
+      </label>
+      <a class="forgot-link">Zapomniałeś hasła?</a>
+    </div>
+  </div>
+</div>
