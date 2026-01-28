@@ -255,11 +255,11 @@
 }
 
 .message.from-me {
-  align-self: flex-start;
+  align-self: flex-end;
 }
 
 .message.from-other {
-  align-self: flex-end;
+  align-self: flex-start;
 }
 
 .message-bubble {
@@ -270,26 +270,30 @@
 }
 
 .from-me .message-bubble {
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  border-bottom-right-radius: 6px;
+}
+
+.from-other .message-bubble {
   background: rgba(50, 50, 50, 0.85);
   color: #fff;
   border-bottom-left-radius: 6px;
 }
 
-.from-other .message-bubble {
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  border-bottom-right-radius: 6px;
-}
-
 .message-time {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;
   padding: 0 8px;
 }
 
-.from-other .message-time {
+.from-me .message-time {
+  color: rgba(0, 0, 0, 0.6);
   text-align: right;
+}
+
+.from-other .message-time {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 /* Chat Input */

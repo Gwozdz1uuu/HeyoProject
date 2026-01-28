@@ -13,6 +13,7 @@ import { AuthService } from '../services/auth.service';
 import { ProfileService } from '../services/profile.service';
 import { UploadService } from '../services/upload.service';
 import { Interest, ProfileCreateRequest } from '../models';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-register-profile',
@@ -133,12 +134,15 @@ export class RegisterProfileComponent {
     try {
       const { firstName, lastName, nickname } = this.profileForm.value;
 
-      // First upload avatar if selected
+      // Najpierw wyślij avatar (jeśli wybrany), tak samo jak w sekcji profilu
       let avatarUrl: string | undefined;
       if (this.avatarFile) {
         this.isUploading.set(true);
         const uploadResponse = await firstValueFrom(this.uploadService.uploadAvatar(this.avatarFile));
-        avatarUrl = uploadResponse.url;
+        // Zbuduj pełny URL tak samo jak w sekcji profilu
+        avatarUrl = uploadResponse.url.startsWith('http')
+          ? uploadResponse.url
+          : `${environment.apiUrl.replace('/api', '')}${uploadResponse.url}`;
         this.isUploading.set(false);
       }
 
@@ -150,7 +154,17 @@ export class RegisterProfileComponent {
         interestIds: this.selectedInterests()
       };
 
+      // Utwórz profil
       await firstValueFrom(this.authService.completeProfile(profileData));
+
+      // Dla pewności ustaw avatar tak samo jak w sekcji profilu
+      if (avatarUrl) {
+        try {
+          await firstValueFrom(this.profileService.updateAvatar(avatarUrl));
+        } catch (e) {
+          console.error('Error updating avatar after profile creation', e);
+        }
+      }
 
       this.isLoading.set(false);
       this.snackBar.open('Profil został utworzony! Witamy w Heyo!', 'Zamknij', {

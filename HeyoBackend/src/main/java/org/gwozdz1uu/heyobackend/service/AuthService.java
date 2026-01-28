@@ -34,26 +34,33 @@ public class AuthService {
         }
 
         // Generate username from email (part before @)
-        String emailPrefix = request.getEmail().split("@")[0];
-        
-        // Ensure base username is at least 3 characters (validation requirement)
-        // If email prefix is too short, pad it with numbers
-        String baseUsername = emailPrefix;
+        String baseUsername = request.getEmail().split("@")[0];
+
+        // Ensure minimum length required by User.username constraints (3–50)
         if (baseUsername.length() < 3) {
-            // Pad short prefixes: "g" -> "g12", "ab" -> "ab1"
-            int paddingNeeded = 3 - baseUsername.length();
-            baseUsername = baseUsername + "1".repeat(paddingNeeded);
+            StringBuilder sb = new StringBuilder(baseUsername);
+            while (sb.length() < 3) {
+                sb.append('x');
+            }
+            baseUsername = sb.toString();
         }
-        
+        if (baseUsername.length() > 50) {
+            baseUsername = baseUsername.substring(0, 50);
+        }
+
         String username = baseUsername;
         int counter = 1;
-        
-        // Ensure username is unique
+
+        // Ensure username is unique and still fits into 50 characters
         while (userRepository.existsByUsername(username)) {
-            // Append counter to ensure uniqueness
-            username = baseUsername + counter;
+            String suffix = String.valueOf(counter);
+            int maxBaseLength = 50 - suffix.length();
+            String truncatedBase = baseUsername.length() > maxBaseLength
+                    ? baseUsername.substring(0, maxBaseLength)
+                    : baseUsername;
+            username = truncatedBase + suffix;
             counter++;
-            
+
             // Safety check to prevent infinite loop
             if (counter > 10000) {
                 throw new RuntimeException("Unable to generate unique username");

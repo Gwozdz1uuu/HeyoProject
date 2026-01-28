@@ -13,6 +13,7 @@ import org.gwozdz1uu.heyobackend.security.JwtService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,22 @@ public class ProfileService {
         profile.setLastName(request.getLastName());
         profile.setNickname(request.getNickname());
 
+        // If user provided nickname, use it as username (display name) as well
+        boolean usernameChanged = false;
+        if (request.getNickname() != null && !request.getNickname().isBlank()) {
+            String newUsername = request.getNickname().trim();
+
+            // Check uniqueness – exclude current user
+            User existingUser = userRepository.findByUsername(newUsername).orElse(null);
+            if (existingUser != null && !existingUser.getId().equals(loadedUser.getId())) {
+                throw new RuntimeException("Username already exists");
+            }
+
+            loadedUser.setUsername(newUsername);
+            loadedUser = userRepository.save(loadedUser);
+            usernameChanged = true;
+        }
+
         if (request.getAvatarUrl() != null && !request.getAvatarUrl().isEmpty()) {
             loadedUser.setAvatarUrl(request.getAvatarUrl());
             loadedUser = userRepository.save(loadedUser);
@@ -63,12 +80,20 @@ public class ProfileService {
         }
 
         profile = profileRepository.save(profile);
-        
+
         // Initialize lazy collections within transaction
         loadedUser.getFriends().size();
         loadedUser.getPosts().size();
-        
-        return toDTO(loadedUser, profile);
+
+        ProfileDTO result = toDTO(loadedUser, profile);
+
+        // Generate new token if username was changed (nickname overrides auto-generated username)
+        if (usernameChanged) {
+            String newToken = jwtService.generateToken(loadedUser);
+            result.setNewToken(newToken);
+        }
+
+        return result;
     }
 
     @Transactional
@@ -137,6 +162,12 @@ public class ProfileService {
             postsCount = 0;
         }
         
+        Set<String> interestNames = profile.getInterests() != null
+                ? profile.getInterests().stream()
+                    .map(Interest::getName)
+                    .collect(Collectors.toSet())
+                : Collections.emptySet();
+
         return ProfileDTO.builder()
                 .id(profile.getId())
                 .userId(user.getId())
@@ -153,6 +184,7 @@ public class ProfileService {
                 .phoneNumber(profile.getPhoneNumber())
                 .friendsCount(friendsCount)
                 .postsCount(postsCount)
+                .interests(interestNames)
                 .build();
     }
 }

@@ -15,16 +15,18 @@
             <div class="avatar" 
                  [style.background-image]="'url(' + (profile()?.avatarUrl || getDefaultAvatar(profile()?.username || '')) + ')'">
             </div>
-            <input 
-              type="file" 
-              id="avatar-input" 
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              (change)="onFileSelected($event)"
-              style="display: none;">
-            <label for="avatar-input" class="change-photo-btn" [class.uploading]="isUploadingAvatar()">
-              <mat-spinner *ngIf="isUploadingAvatar()" diameter="16"></mat-spinner>
-              Zmień zdjęcie
-            </label>
+            <ng-container *ngIf="isOwnProfile()">
+              <input 
+                type="file" 
+                id="avatar-input" 
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                (change)="onFileSelected($event)"
+                style="display: none;">
+              <label for="avatar-input" class="change-photo-btn" [class.uploading]="isUploadingAvatar()">
+                <mat-spinner *ngIf="isUploadingAvatar()" diameter="16"></mat-spinner>
+                Zmień zdjęcie
+              </label>
+            </ng-container>
           </div>
           
           <div class="profile-info">
@@ -37,10 +39,24 @@
             <p class="profile-nickname placeholder" *ngIf="!profile()?.nickname">
               Brak nickname
             </p>
+
+            <!-- Interests -->
+            <div 
+              class="profile-interests" 
+              *ngIf="profile()?.interests && profile()?.interests!.length">
+              <h4 class="interests-title">Zainteresowania</h4>
+              <div class="interests-chips">
+                <span 
+                  class="interest-chip" 
+                  *ngFor="let interest of profile()?.interests">
+                  {{ interest }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="profile-actions">
+        <div class="profile-actions" *ngIf="isOwnProfile()">
           <button class="edit-btn" (click)="openEditUsernameDialog()">
             Edytuj
           </button>
@@ -48,7 +64,9 @@
 
         <!-- Posts Grid -->
         <div class="posts-section">
-          <h3 class="section-title">Moje posty</h3>
+          <h3 class="section-title">
+            {{ isOwnProfile() ? 'Moje posty' : 'Posty' }}
+          </h3>
           <div class="posts-grid" *ngIf="posts().length > 0">
             <div 
               class="post-thumbnail" 
@@ -58,9 +76,9 @@
               [class.hovered]="hoveredPostId() === post.id"
               [class.has-image]="post.imageUrl"
               [class.has-text-only]="!post.imageUrl && post.content">
-              <div class="post-image" *ngIf="post.imageUrl"
+            <div class="post-image" *ngIf="post.imageUrl"
                    [style.background-image]="'url(' + post.imageUrl + ')'">
-                <div class="post-overlay" *ngIf="hoveredPostId() === post.id">
+                <div class="post-overlay" *ngIf="hoveredPostId() === post.id && isOwnProfile()">
                   <button class="delete-post-btn" (click)="deletePost(post.id)">
                     <span class="delete-icon">🗑️</span>
                   </button>
@@ -71,7 +89,7 @@
               </div>
               <div class="post-text-only" *ngIf="!post.imageUrl && post.content">
                 <p class="post-text-content">{{ post.content }}</p>
-                <div class="post-overlay" *ngIf="hoveredPostId() === post.id">
+                <div class="post-overlay" *ngIf="hoveredPostId() === post.id && isOwnProfile()">
                   <button class="delete-post-btn" (click)="deletePost(post.id)">
                     <span class="delete-icon">🗑️</span>
                   </button>
@@ -92,7 +110,9 @@
     <!-- Right Column: Events -->
     <div class="right-column">
       <div class="events-card">
-        <h3 class="section-title">Moje wydarzenia</h3>
+        <h3 class="section-title">
+          {{ isOwnProfile() ? 'Moje wydarzenia' : 'Wydarzenia' }}
+        </h3>
         
         <div class="loading-container" *ngIf="events().length === 0 && !isLoading()">
           <p>Brak wydarzeń</p>

@@ -20,6 +20,10 @@ export class ProfileService {
     return this.http.get<ProfileDTO>(`${this.apiUrl}/profiles/me`);
   }
 
+  getProfileByUserId(userId: number): Observable<ProfileDTO> {
+    return this.http.get<ProfileDTO>(`${this.apiUrl}/profiles/${userId}`);
+  }
+
   updateProfile(profile: ProfileDTO): Observable<ProfileDTO> {
     return this.http.put<ProfileDTO>(`${this.apiUrl}/profiles/me`, profile);
   }

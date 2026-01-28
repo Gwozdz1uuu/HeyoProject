@@ -1,14 +1,15 @@
 .home-container {
   display: flex;
-  gap: 24px;
+  justify-content: center;
   padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 100vh;
 }
 
 .feed-section {
-  flex: 1;
-  max-width: 600px;
+  width: 100%;
+  max-width: 700px;
 }
 
 /* Create Post Card */
@@ -355,45 +356,87 @@
   height: 18px;
 }
 
-/* Ads Section */
-.ads-section {
-  width: 200px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* Advertisement Card in Feed */
+.ad-card-in-feed {
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 24px;
 }
 
-.ad-card {
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
-  overflow: hidden;
+.ad-card-in-feed:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.ad-header {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ad-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .ad-image {
   width: 100%;
-  height: 250px;
+  height: 300px;
   background-size: cover;
   background-position: center;
   background-color: #333;
+  display: block;
+}
+
+.ad-content {
+  padding: 16px;
+}
+
+.ad-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.ad-description {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.ad-button {
+  width: 100%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.ad-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 /* Responsive */
 @media (max-width: 900px) {
-  .home-container {
-    flex-direction: column;
-  }
-  
-  .ads-section {
-    width: 100%;
-    flex-direction: row;
-    overflow-x: auto;
-  }
-  
-  .ad-card {
-    min-width: 150px;
+  .feed-section {
+    max-width: 100%;
   }
   
   .ad-image {
-    height: 180px;
+    height: 250px;
   }
 }

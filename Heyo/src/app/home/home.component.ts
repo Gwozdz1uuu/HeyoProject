@@ -36,10 +36,43 @@ export class HomeComponent implements OnInit {
   isSubmittingComment = signal<Map<number, boolean>>(new Map());
 
   ads = [
-    { id: 1, image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=200&h=300&fit=crop' },
-    { id: 2, image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=200&h=300&fit=crop' },
-    { id: 3, image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&h=300&fit=crop' }
+    {
+      id: 1,
+      image: 'https://th.bing.com/th/id/OIP.Lp871-g7bp0ZydLC2YMQwQHaFb?w=243&h=180&c=7&r=0&o=7&cb=defcache2&dpr=1.3&pid=1.7&rm=3&defcache=1',
+      title: 'Specjalna Oferta',
+      description: 'Odkryj nasze najlepsze produkty w atrakcyjnych cenach!'
+    },
+    {
+      id: 2,
+      image: 'https://www.bing.com/images/search?view=detailV2&ccid=bls5%2FtwP&id=AACC59A29B2F2A4A0D85B2B59CBD6CA497D58125&thid=OIP.bls5_twPKTLxtDFBUI0DngHaHa&mediaurl=https%3A%2F%2Fa.allegroimg.com%2Foriginal%2F1170f6%2Fc82d88594e9ab8b2c2ff083ececd%2FPlakat-Reklamowy-B1-WYPRZEDAZ-na-witryne-sklepowa-70x100cm-Papier-150g&cdnurl=https%3A%2F%2Fth.bing.com%2Fth%2Fid%2FR.6e5b39fedc0f2932f1b43141508d039e%3Frik%3DJYHVl6RsvZy1sg%26pid%3DImgRaw%26r%3D0&exph=2560&expw=2560&q=oferta+specjalna+meme&form=IRPRST&ck=BB47B3F93E41353B6E499E8B77A8C192&selectedindex=23&itb=0&ajaxhist=0&ajaxserp=0&cit=ccid_0O8JzsvM*cp_0DD2B18611A89B887D54C1D0A4578F9C*mid_CE314115C7D673EAC12195F6757A9E6021973215*thid_OIP.0O8JzsvMXwFJTn8g1fwLugHaHa&vt=2',
+      title: 'Nowy Produkt',
+      description: 'Sprawdź najnowsze trendy i innowacyjne rozwiązania.'
+    },
+    {
+      id: 3,
+      image: 'https://www.bing.com/images/search?view=detailV2&ccid=7ECzELod&id=8B53006D93719D4EC5DE2AC166C04CFA2CC63E77&thid=OIP.7ECzELodTBT0aMhuZ664wgHaHX&mediaurl=https%3A%2F%2Fimage.ceneostatic.pl%2Fdata%2Fproducts%2F156859768%2Fi-naklejka-na-witryne-sklepowa-30cm.jpg&cdnurl=https%3A%2F%2Fth.bing.com%2Fth%2Fid%2FR.ec40b310ba1d4c14f468c86e67aeb8c2%3Frik%3Ddz7GLPpMwGbBKg%26pid%3DImgRaw%26r%3D0&exph=2538&expw=2550&q=oferta+specjalna+meme&form=IRPRST&ck=537EDB1CEB537CCB480198AB7A1CE03C&selectedindex=27&itb=0&ajaxhist=0&ajaxserp=0&cit=ccid_0O8JzsvM*cp_0DD2B18611A89B887D54C1D0A4578F9C*mid_CE314115C7D673EAC12195F6757A9E6021973215*thid_OIP.0O8JzsvMXwFJTn8g1fwLugHaHa&vt=2',
+      title: 'Promocja',
+      description: 'Nie przegap wyjątkowych okazji i zniżek!'
+    }
   ];
+
+  getFeedWithAds(): Array<{type: 'post', post: Post} | {type: 'ad', ad: any}> {
+    const feedItems: Array<{type: 'post', post: Post} | {type: 'ad', ad: any}> = [];
+    const posts = this.posts();
+    let adIndex = 0;
+    
+    posts.forEach((post, index) => {
+      feedItems.push({ type: 'post', post });
+      
+      // Dodaj reklamę co 2 posty (po 1, 3, 5, itd.)
+      if ((index + 1) % 2 === 0 && adIndex < this.ads.length) {
+        feedItems.push({ type: 'ad', ad: this.ads[adIndex] });
+        adIndex++;
+      }
+    });
+    
+    return feedItems;
+  }
 
   constructor(
     private postService: PostService,

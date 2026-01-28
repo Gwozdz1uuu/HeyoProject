@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { User, AuthRequest, RegisterRequest, AuthResponse, ProfileCreateRequest } from '../models';
+import { User, AuthRequest, RegisterRequest, AuthResponse, ProfileCreateRequest, ProfileDTO } from '../models';
 import { WebSocketService } from './websocket.service';
 
 @Injectable({
@@ -59,14 +59,32 @@ export class AuthService {
     );
   }
 
-  completeProfile(profileData: ProfileCreateRequest): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/profiles/complete`, profileData).pipe(
-      tap(() => {
-        // After profile completion, user is fully registered
-        // Refresh user data if needed
-        const token = this.getToken();
-        if (token) {
-          this.initializeWebSocket(token);
+  completeProfile(profileData: ProfileCreateRequest): Observable<ProfileDTO> {
+    return this.http.post<ProfileDTO>(`${environment.apiUrl}/profiles/complete`, profileData).pipe(
+      tap(profile => {
+        // If backend returned new token (because username was changed to nickname),
+        // update stored token and current user info.
+        if (profile.newToken) {
+          localStorage.setItem(this.TOKEN_KEY, profile.newToken);
+
+          const userJson = localStorage.getItem(this.USER_KEY);
+          if (userJson) {
+            try {
+              const user: User = JSON.parse(userJson);
+              user.username = profile.username;
+              localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+              this.currentUserSignal.set(user);
+            } catch {
+              // ignore parse errors, user will be refreshed on next login
+            }
+          }
+
+          this.initializeWebSocket(profile.newToken);
+        } else {
+          const token = this.getToken();
+          if (token) {
+            this.initializeWebSocket(token);
+          }
         }
       })
     );

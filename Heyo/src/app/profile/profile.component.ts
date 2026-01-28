@@ -17,6 +17,7 @@ import { WebSocketService } from '../services/websocket.service';
 import { ProfileDTO, Post, Event as EventModel, Page } from '../models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -42,6 +43,8 @@ export class ProfileComponent implements OnInit {
   isLoading = signal(true);
   isUploadingAvatar = signal(false);
   hoveredPostId = signal<number | null>(null);
+  isOwnProfile = signal(true);
+  private viewedUserId: number | null = null;
 
   constructor(
     private profileService: ProfileService,
@@ -52,16 +55,39 @@ export class ProfileComponent implements OnInit {
     private wsService: WebSocketService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.loadProfile();
-    this.loadPosts();
-    this.loadEvents();
+    this.route.paramMap.subscribe(params => {
+      const idParam = params.get('id');
+      const currentUserId = this.authService.getCurrentUserId();
+
+      if (idParam) {
+        this.viewedUserId = Number(idParam);
+        this.isOwnProfile.set(currentUserId !== null && this.viewedUserId === currentUserId);
+      } else {
+        this.viewedUserId = currentUserId;
+        this.isOwnProfile.set(true);
+      }
+
+      if (this.viewedUserId && !this.isOwnProfile()) {
+        this.loadProfileByUserId(this.viewedUserId);
+        this.loadPostsForUser(this.viewedUserId);
+        // Na razie sekcja wydarzeń pokazuje tylko własne wydarzenia użytkownika zalogowanego
+        this.events.set([]);
+      } else {
+        this.loadMyProfile();
+        if (currentUserId) {
+          this.loadPostsForUser(currentUserId);
+        }
+        this.loadEvents();
+      }
+    });
   }
 
-  loadProfile(): void {
+  private loadMyProfile(): void {
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
         this.profile.set(profile);
@@ -77,10 +103,24 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  loadPosts(): void {
-    const userId = this.authService.getCurrentUserId();
-    if (!userId) return;
+  private loadProfileByUserId(userId: number): void {
+    this.isLoading.set(true);
+    this.profileService.getProfileByUserId(userId).subscribe({
+      next: (profile) => {
+        this.profile.set(profile);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading profile by user id:', error);
+        this.isLoading.set(false);
+        this.snackBar.open('Błąd podczas ładowania profilu użytkownika', 'Zamknij', {
+          duration: 3000
+        });
+      }
+    });
+  }
 
+  private loadPostsForUser(userId: number): void {
     this.postService.getUserPosts(userId, 0, 9).subscribe({
       next: (response: Page<Post>) => {
         this.posts.set(response.content);

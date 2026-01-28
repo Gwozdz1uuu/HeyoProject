@@ -4,7 +4,6 @@
     <div class="notifications-header">
       <h2>Powiadomienia</h2>
       <button class="mark-all-btn" (click)="markAllAsRead()" *ngIf="notifications().length > 0">
-        <mat-icon>done_all</mat-icon>
         Oznacz wszystkie jako przeczytane
       </button>
     </div>
@@ -36,11 +35,9 @@
         <!-- Friend Request Actions -->
         <div class="friend-request-actions" *ngIf="isFriendRequest(notif)">
           <button class="accept-btn" (click)="acceptFriendRequest(notif, $event)">
-            <mat-icon>check</mat-icon>
             <span>Akceptuj</span>
           </button>
           <button class="decline-btn" (click)="declineFriendRequest(notif, $event)">
-            <mat-icon>close</mat-icon>
             <span>Odrzuć</span>
           </button>
         </div>

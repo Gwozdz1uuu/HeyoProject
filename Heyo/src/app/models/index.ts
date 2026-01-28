@@ -57,6 +57,7 @@ export interface ProfileDTO {
   phoneNumber?: string;
   friendsCount: number;
   postsCount: number;
+  interests?: string[];
   newToken?: string; // New JWT token if username was changed
 }
 

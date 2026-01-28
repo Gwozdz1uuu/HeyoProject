@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder
@@ -23,5 +24,9 @@ public class ProfileDTO {
     private String phoneNumber;
     private int friendsCount;
     private int postsCount;
+    /**
+     * Names of interests assigned to this profile.
+     */
+    private Set<String> interests;
     private String newToken; // New JWT token if username was changed
 }

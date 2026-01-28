@@ -8,14 +8,14 @@
         <div class="avatar-preview" [class.has-avatar]="avatarPreview">
           <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Avatar preview">
           <div *ngIf="!avatarPreview" class="avatar-placeholder">
-            <mat-icon>add_a_photo</mat-icon>
+            <!-- Placeholder without icon -->
           </div>
           <button 
             type="button" 
             class="remove-avatar-btn" 
             *ngIf="avatarPreview"
             (click)="removeAvatar()">
-            <mat-icon>close</mat-icon>
+            <!-- Removed close icon, keep button functional if needed -->
           </button>
         </div>
         <input 
@@ -25,7 +25,6 @@
           (change)="onFileSelected($event)"
           style="display: none;">
         <label for="avatar-input" class="upload-btn">
-          <mat-icon>photo_camera</mat-icon>
           Dodaj zdjęcie
         </label>
       </div>
@@ -65,7 +64,6 @@
           class="interests-btn"
           (click)="showInterestsDropdown.set(!showInterestsDropdown())">
           <span>Zainteresowania</span>
-          <mat-icon>{{ showInterestsDropdown() ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
         
         <div class="interests-dropdown" *ngIf="showInterestsDropdown()">
